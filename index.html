@@ -319,7 +319,7 @@
         return false;
       }
 
-      if (!/^\d{1,6}$/.test(postalCode)) {
+      if (!/^\d{6}$/.test(postalCode)) {
         showMessage('Postal code must contain only integers and no more than 6 digits.');
         return false;
       }
