@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Address Manager</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #dbe3ec;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 24px;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .message {
+      margin-top: 12px;
+      min-height: 22px;
+      font-weight: 600;
+    }
+
+    .message.error { color: var(--danger); }
+    .message.success { color: var(--success); }
+
+    .addresses-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .addresses-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .address-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .address-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      background: #fafcff;
+    }
+
+    .address-item p {
+      margin: 4px 0;
+      color: var(--muted);
+    }
+
+    .address-item strong { color: var(--text); }
+
+    .pagination {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .page-btn {
+      background: #eef2ff;
+      color: var(--accent-dark);
+      border: 1px solid #dbe3ec;
+      padding: 8px 12px;
+      min-width: 40px;
+    }
+
+    .page-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .hosting {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .hosting ol { padding-left: 20px; }
+
+    .hosting code {
+      background: #f3f4f6;
+      color: #111827;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: Consolas, monospace;
+    }
+
+    @media (max-width: 720px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .address-item { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Address Manager</h1>
+
+    <div class="card">
+      <form id="addressForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="street">Street / Flat No.</label>
+            <input id="street" name="street" type="text" placeholder="Enter street or flat no" required />
+          </div>
+          <div class="field">
+            <label for="area">Area</label>
+            <input id="area" name="area" type="text" placeholder="Enter area" required />
+          </div>
+          <div class="field">
+            <label for="city">City</label>
+            <input id="city" name="city" type="text" placeholder="Enter city" required />
+          </div>
+          <div class="field">
+            <label for="postalCode">Postal Code</label>
+            <input id="postalCode" name="postalCode" type="text" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit postal code" required />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary">ADD</button>
+        </div>
+        <div id="message" class="message" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="addresses-header">
+        <h2>Addresses</h2>
+      </div>
+      <div id="addressList" class="address-list"></div>
+      <div id="pagination" class="pagination"></div>
+    </div>
+
+    <div class="card hosting">
+      <h3>How to host this page</h3>
+      <ol>
+        <li>Save this file as <code>index.html</code>.</li>
+        <li>Upload it to GitHub Pages, Netlify, Vercel, or any static hosting service.</li>
+        <li>Open the published URL in your browser.</li>
+      </ol>
+      <p><strong>Note:</strong> This demo stores data in the browser using <code>localStorage</code>. For true server-side persistence, connect this page to a backend (for example: Node.js/Express + MongoDB, Firebase, or Supabase) and replace the localStorage calls with API requests.</p>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'address-manager-data';
+    const ITEMS_PER_PAGE = 3;
+    const form = document.getElementById('addressForm');
+    const messageBox = document.getElementById('message');
+    const addressList = document.getElementById('addressList');
+    const pagination = document.getElementById('pagination');
+
+    const streetInput = document.getElementById('street');
+    const areaInput = document.getElementById('area');
+    const cityInput = document.getElementById('city');
+    const postalCodeInput = document.getElementById('postalCode');
+
+    let addresses = loadAddresses();
+    let currentPage = 1;
+
+    function showMessage(text, type = 'error') {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+    }
+
+    function clearMessage() {
+      messageBox.textContent = '';
+      messageBox.className = 'message';
+    }
+
+    function loadAddresses() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : [];
+      } catch (error) {
+        console.error('Failed to load addresses:', error);
+        return [];
+      }
+    }
+
+    function saveAddresses() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(addresses));
+    }
+
+    function validateForm() {
+      const street = streetInput.value.trim();
+      const area = areaInput.value.trim();
+      const city = cityInput.value.trim();
+      const postalCode = postalCodeInput.value.trim();
+
+      const allEmpty = !street && !area && !city && !postalCode;
+      if (allEmpty) {
+        showMessage('Street/Flat no. textfield cannot be empty');
+        return false;
+      }
+
+      if (!street) {
+        showMessage('Street/Flat no. textfield cannot be empty');
+        return false;
+      }
+
+      if (!area || !city || !postalCode) {
+        showMessage('Please fill all textfields before saving.');
+        return false;
+      }
+
+      if (!/^[A-Za-z0-9 ]+$/.test(street) || !/^[A-Za-z0-9 ]+$/.test(area) || !/^[A-Za-z0-9 ]+$/.test(city)) {
+        showMessage('The first three fields can contain only alphanumeric characters.');
+        return false;
+      }
+
+      if (!/^\d{1,6}$/.test(postalCode)) {
+        showMessage('Postal code must contain only integers and no more than 6 digits.');
+        return false;
+      }
+
+      return true;
+    }
+
+    function addAddress(event) {
+      event.preventDefault();
+      clearMessage();
+
+      if (!validateForm()) {
+        return;
+      }
+
+      const newAddress = {
+        id: Date.now().toString(),
+        street: streetInput.value.trim(),
+        area: areaInput.value.trim(),
+        city: cityInput.value.trim(),
+        postalCode: postalCodeInput.value.trim()
+      };
+
+      addresses.unshift(newAddress);
+      saveAddresses();
+      form.reset();
+      currentPage = 1;
+      renderAddresses();
+      showMessage('Address saved successfully.', 'success');
+    }
+
+    function deleteAddress(id) {
+      addresses = addresses.filter((item) => item.id !== id);
+      saveAddresses();
+      const maxPage = Math.max(1, Math.ceil(addresses.length / ITEMS_PER_PAGE));
+      if (currentPage > maxPage) {
+        currentPage = maxPage;
+      }
+      renderAddresses();
+    }
+
+    function renderAddresses() {
+      const totalPages = Math.max(1, Math.ceil(addresses.length / ITEMS_PER_PAGE));
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+      }
+
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      const pageItems = addresses.slice(start, start + ITEMS_PER_PAGE);
+
+      addressList.innerHTML = '';
+      if (addresses.length === 0) {
+        const empty = document.createElement('p');
+        empty.textContent = 'No addresses saved yet.';
+        empty.style.color = '#6b7280';
+        addressList.appendChild(empty);
+      } else {
+        const list = document.createElement('div');
+        list.className = 'address-list';
+        pageItems.forEach((item) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'address-item';
+          wrapper.innerHTML = `
+            <div>
+              <p><strong>Street / Flat No:</strong> ${item.street}</p>
+              <p><strong>Area:</strong> ${item.area}</p>
+              <p><strong>City:</strong> ${item.city}</p>
+              <p><strong>Postal Code:</strong> ${item.postalCode}</p>
+            </div>
+            <button class="btn-danger" type="button">Delete</button>
+          `;
+          wrapper.querySelector('button').addEventListener('click', () => deleteAddress(item.id));
+          list.appendChild(wrapper);
+        });
+        addressList.appendChild(list);
+      }
+
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      pagination.innerHTML = '';
+      if (totalPages <= 1) {
+        return;
+      }
+
+      const createButton = (label, page, active = false) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `page-btn${active ? ' active' : ''}`;
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          currentPage = page;
+          renderAddresses();
+        });
+        return btn;
+      };
+
+      if (currentPage > 1) {
+        pagination.appendChild(createButton('Prev', currentPage - 1));
+      }
+
+      for (let page = 1; page <= totalPages; page += 1) {
+        pagination.appendChild(createButton(page, page, page === currentPage));
+      }
+
+      if (currentPage < totalPages) {
+        pagination.appendChild(createButton('Next', currentPage + 1));
+      }
+    }
+
+    postalCodeInput.addEventListener('input', (event) => {
+      const value = event.target.value.replace(/\D/g, '').slice(0, 6);
+      event.target.value = value;
+    });
+
+    [streetInput, areaInput, cityInput].forEach((input) => {
+      input.addEventListener('input', (event) => {
+        event.target.value = event.target.value.replace(/[^A-Za-z0-9 ]/g, '');
+      });
+    });
+
+    form.addEventListener('submit', addAddress);
+    renderAddresses();
+  </script>
+</body>
+</html>
